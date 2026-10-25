@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1152" height="1152" viewBox="0 0 1152 1152">
+  <!-- Digura: beş duygu rengi halkası + kilitli zaman kapsülü -->
+  <g transform="translate(576 576) scale(0.96) translate(-512 -512)">
+    <path d="M535.54 212.92A300 300 0 0 1 789.16 397.19" fill="none" stroke="#F0C543" stroke-width="112"/>
+    <path d="M803.71 441.97A300 300 0 0 1 706.83 740.12" fill="none" stroke="#5AA3EC" stroke-width="112"/>
+    <path d="M668.75 767.79A300 300 0 0 1 355.25 767.79" fill="none" stroke="#EF6661" stroke-width="112"/>
+    <path d="M317.17 740.12A300 300 0 0 1 220.29 441.97" fill="none" stroke="#63BE86" stroke-width="112"/>
+    <path d="M234.84 397.19A300 300 0 0 1 488.46 212.92" fill="none" stroke="#82868E" stroke-width="112"/>
+    <mask id="khe" maskUnits="userSpaceOnUse" x="0" y="0" width="1024" height="1024"><rect width="1024" height="1024" fill="#fff"/><circle cx="512" cy="486" r="26" fill="#000"/><path d="M502 500h20l8 62h-36z" fill="#000"/></mask><rect x="437" y="382" width="150" height="260" rx="75" fill="#E9EBEE" mask="url(#khe)"/>
+  </g>
+</svg>

@@ -1,0 +1,691 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Digura · Duygu Haritası & Dijital Zaman Kapsülü — Prototip</title>
+<style>
+  :root {
+    --bg: #f8fafd;
+    --surface: #ffffff;
+    --surface-warm: #e8f0fe;
+    --fg: #202124;
+    --muted: #5f6368;
+    --border: #dadce0;
+    --accent: #1a73e8;
+    --on-accent: #ffffff;
+    --accent-hover: color-mix(in oklab, var(--accent), black 8%);
+    --empty: oklch(94.5% 0.004 255);
+    --tonal: #edf0f2;
+    --tonal-hover: #dadce0;
+    --scrim: oklch(15% 0.01 255 / 0.42);
+
+    --m-joyful: oklch(85% 0.16 90);    --on-joyful: oklch(26% 0.05 80);
+    --m-calmSad: oklch(54% 0.15 252);  --on-calmSad: oklch(99% 0 0);
+    --m-angryStressed: oklch(57% 0.2 25); --on-angryStressed: oklch(99% 0 0);
+    --m-serene: oklch(70% 0.14 155);   --on-serene: oklch(22% 0.05 155);
+    --m-tired: oklch(68% 0.012 260);   --on-tired: oklch(20% 0.01 260);
+
+    --font-display: "Google Sans", Roboto, Arial, sans-serif;
+    --font-body: Roboto, Arial, sans-serif;
+    --font-mono: "Roboto Mono", ui-monospace, Menlo, monospace;
+  }
+  .theme-dark {
+    --bg: oklch(15.5% 0.007 255);
+    --surface: oklch(19% 0.008 255);
+    --surface-warm: oklch(28% 0.04 255);
+    --fg: oklch(94% 0.004 255);
+    --muted: oklch(72% 0.01 255);
+    --border: oklch(36% 0.01 255);
+    --accent: oklch(76% 0.12 255);
+    --on-accent: oklch(18% 0.03 255);
+    --accent-hover: color-mix(in oklab, var(--accent), white 12%);
+    --empty: oklch(26% 0.009 255);
+    --tonal: oklch(26% 0.009 255);
+    --tonal-hover: oklch(36% 0.01 255);
+    --scrim: oklch(5% 0 0 / 0.6);
+    --m-joyful: oklch(84% 0.15 90);    --on-joyful: oklch(22% 0.05 80);
+    --m-calmSad: oklch(70% 0.13 250);  --on-calmSad: oklch(18% 0.04 250);
+    --m-angryStressed: oklch(68% 0.17 25); --on-angryStressed: oklch(18% 0.04 25);
+    --m-serene: oklch(73% 0.12 155);   --on-serene: oklch(18% 0.04 155);
+    --m-tired: oklch(62% 0.012 260);   --on-tired: oklch(15% 0.01 260);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: oklch(95.5% 0.004 255);
+    color: oklch(19% 0.012 255);
+    font-family: var(--font-body);
+    font-size: 15px; line-height: 1.4;
+    -webkit-font-smoothing: antialiased;
+    padding: 40px 24px 56px;
+  }
+  button { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+
+  /* ─── page chrome ─── */
+  .page-head { max-width: 860px; margin: 0 auto 32px; display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px; }
+  .page-head h1 { font-family: var(--font-display); font-weight: 500; font-size: 40px; letter-spacing: -0.02em; line-height: 1; margin: 0 0 8px; }
+  .page-head p { margin: 0; color: oklch(48% 0.012 255); max-width: 52ch; text-wrap: pretty; }
+  .page-head .facts { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.04em; margin-top: 10px; }
+  .reset-link { background: none; border: 1px solid oklch(85% 0.006 255); border-radius: 999px; padding: 10px 16px; min-height: 44px; font-size: 13px; cursor: pointer; color: oklch(25% 0.012 255); }
+  .reset-link:hover { background: oklch(90% 0.006 255); }
+
+  .stage-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 56px; }
+  .stage { display: flex; flex-direction: column; align-items: center; gap: 18px; }
+  .caption { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: oklch(48% 0.012 255); }
+  .caption strong { color: oklch(19% 0.012 255); font-weight: 600; }
+
+  /* ─── device frame (seed) ─── */
+  .device { position: relative; width: 390px; height: 844px; border-radius: 56px; padding: 12px;
+    background: linear-gradient(160deg, #2a2a2c 0%, #1a1a1c 50%, #0e0e10 100%);
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.04) inset, 0 0 0 2px #000 inset, 0 28px 60px -12px rgba(0,0,0,0.45), 0 8px 20px -8px rgba(0,0,0,0.35);
+    isolation: isolate; flex: none; }
+  .device::before, .device::after { content: ''; position: absolute; width: 3px; top: 100px; bottom: 100px; pointer-events: none;
+    background: linear-gradient(to bottom, transparent 0%, rgba(255,255,255,0.06) 8%, transparent 16%, transparent 84%, rgba(255,255,255,0.04) 92%, transparent 100%); }
+  .device::before { left: -1px; } .device::after { right: -1px; }
+  .island { position: absolute; top: 22px; left: 50%; transform: translateX(-50%); width: 124px; height: 36px; background: #000; border-radius: 999px; z-index: 30; }
+  .btn-rail { position: absolute; width: 4px; background: #0a0a0c; border-radius: 2px; }
+  .btn-rail.left-1 { left: -3px; top: 174px; height: 32px; } .btn-rail.left-2 { left: -3px; top: 220px; height: 60px; }
+  .btn-rail.left-3 { left: -3px; top: 290px; height: 60px; } .btn-rail.right-1 { right: -3px; top: 250px; height: 100px; }
+
+  .screen { position: relative; width: 100%; height: 100%; background: var(--bg); color: var(--fg); border-radius: 44px; overflow: hidden; display: flex; flex-direction: column; }
+  .statusbar { flex: 0 0 47px; padding: 18px 26px 0; display: flex; align-items: flex-start; justify-content: space-between; font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+  .statusbar .right { display: inline-flex; align-items: center; gap: 6px; }
+  .statusbar svg { width: 17px; height: 11px; fill: var(--fg); }
+  .statusbar .battery { width: 25px; }
+  .content { flex: 1 1 auto; overflow-y: auto; overflow-x: hidden; padding: 4px 0 24px; }
+  .content::-webkit-scrollbar { display: none; }
+  .home-indicator { flex: 0 0 22px; position: relative; background: var(--surface); }
+  .home-indicator::after { content: ''; position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%); width: 134px; height: 5px; background: var(--fg); border-radius: 999px; opacity: 0.85; }
+
+  /* ─── primitives ─── */
+  .pad { padding-inline: 20px; }
+  .header { padding: 8px 20px 16px; }
+  .greeting { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin: 0 0 6px; }
+  .header h1 { font-family: var(--font-display); font-weight: 500; font-size: 28px; letter-spacing: -0.02em; line-height: 1.1; margin: 0; }
+  .h2 { font-family: var(--font-display); font-weight: 500; font-size: 22px; letter-spacing: -0.015em; line-height: 1.2; margin: 0; }
+  .meta { font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+  .num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 16px; }
+  .icon { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+
+  .btn-primary { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 52px; padding: 14px 20px; border: 0; border-radius: 999px;
+    background: var(--accent); color: var(--on-accent); font-size: 16px; font-weight: 600; cursor: pointer; transition: background .15s; }
+  .btn-primary:hover:not(:disabled) { background: var(--accent-hover); }
+  .btn-primary:disabled { background: var(--tonal); color: var(--muted); cursor: not-allowed; }
+  .btn-text { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 10px 14px; border: 0; border-radius: 999px; background: transparent; font-size: 15px; font-weight: 600; cursor: pointer; }
+  .btn-text:hover { background: var(--tonal); }
+  .icon-btn { width: 44px; height: 44px; border-radius: 999px; border: 0; background: transparent; display: grid; place-items: center; cursor: pointer; }
+  .icon-btn:hover:not(:disabled) { background: var(--tonal); }
+  .icon-btn:disabled { opacity: .35; cursor: default; }
+  .header.has-gear { position: relative; }
+  .header.has-gear h1 { padding-right: 44px; }
+  .icon-btn.gear { position: absolute; top: 0; right: 10px; color: var(--fg); text-decoration: none; }
+  .icon-btn.gear .icon { width: 22px; height: 22px; }
+
+  /* ─── Bugün ─── */
+  .orb-wrap { display: grid; place-items: center; padding: 6px 0 18px; }
+  .orb { width: 152px; height: 152px; border-radius: 50%; display: grid; place-items: center; transition: background-color var(--dur-ui) var(--ease-out), box-shadow var(--dur-ui) var(--ease-out);
+    background: var(--empty); box-shadow: inset 0 0 0 1px var(--border); color: var(--muted); }
+  .orb.filled { background: var(--mc); box-shadow: 0 18px 40px -16px var(--mc); color: var(--on); }
+  .orb .icon { width: 30px; height: 30px; }
+  .orb-label { text-align: center; margin-top: 14px; min-height: 52px; }
+  .orb-label .h2 { min-height: 27px; }
+  .swatches { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; padding: 0 12px; }
+  .swatch { display: grid; justify-items: center; gap: 6px; padding: 4px 0; border: 0; background: none; cursor: pointer; border-radius: 16px; }
+  .swatch .dot { width: 50px; height: 50px; border-radius: 50%; background: var(--mc); display: grid; place-items: center; color: var(--on);
+    transition: transform var(--dur-press) var(--ease-out), box-shadow var(--dur-press) var(--ease-out); box-shadow: 0 0 0 0 var(--fg); }
+  .swatch:hover .dot { transform: scale(1.06); }
+  .swatch[aria-checked="true"] .dot { box-shadow: 0 0 0 3px var(--bg), 0 0 0 5px var(--fg); }
+  .swatch .dot .icon { width: 22px; height: 22px; stroke-width: 2.6; opacity: 0; }
+  .swatch[aria-checked="true"] .dot .icon { opacity: 1; }
+  .swatch .lbl { font-size: 12px; line-height: 1.2; color: var(--muted); text-align: center; min-height: 29px; }
+  .swatch[aria-checked="true"] .lbl { color: var(--fg); font-weight: 600; }
+  .swatch:focus-visible { outline-offset: 0; }
+
+  .note-field { margin: 22px 20px 0; border: 1px solid var(--border); border-radius: 18px; background: var(--surface); padding: 12px 14px 10px; transition: border-color .15s; }
+  .note-field:focus-within { border-color: var(--fg); }
+  .note-field label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+  .note-field textarea { width: 100%; border: 0; outline: 0; resize: none; background: transparent; color: var(--fg); font: inherit; font-size: 16px; line-height: 1.4; height: 46px; padding: 0; }
+  .note-field textarea::placeholder { color: var(--muted); }
+  .note-foot { display: flex; justify-content: space-between; gap: 12px; margin-top: 6px; font-size: 12px; color: var(--muted); }
+  .note-foot .lockline { display: inline-flex; align-items: center; gap: 5px; }
+  .note-foot .icon { width: 14px; height: 14px; }
+  .count.limit { color: var(--m-angryStressed); font-weight: 600; }
+  .save-row { padding: 18px 20px 0; }
+
+  .saved-card { margin: 18px 20px 0; display: grid; gap: 12px; }
+  .capsule-line { display: flex; align-items: center; gap: 12px; }
+  .capsule-line .lock-badge { width: 44px; height: 44px; border-radius: 14px; background: var(--tonal); display: grid; place-items: center; flex: none; }
+  .capsule-line strong { display: block; font-weight: 600; }
+  .capsule-line span { color: var(--muted); font-size: 14px; }
+  .bar { height: 6px; border-radius: 999px; background: var(--empty); overflow: hidden; }
+  .bar > span { display: block; height: 100%; background: var(--fg); border-radius: inherit; }
+
+  /* ─── Harita ─── */
+  .seg { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--border); border-radius: 999px; padding: 3px; margin: 0 20px 14px; background: var(--surface); }
+  .seg button { min-height: 44px; border: 0; border-radius: 999px; background: transparent; font-size: 14px; font-weight: 500; color: var(--muted); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+  .seg button:hover { color: var(--fg); background: var(--tonal); }
+  .seg button[aria-pressed="true"] { background: var(--tonal); color: var(--fg); font-weight: 600; }
+  .seg button[aria-pressed="true"] .icon { width: 16px; height: 16px; }
+  .month-nav { display: flex; align-items: center; justify-content: space-between; padding: 0 10px 0 20px; margin-bottom: 8px; }
+  .month-nav .title { font-family: var(--font-display); font-size: 20px; font-weight: 500; letter-spacing: -0.01em; }
+  .month-nav .sub { display: block; font-family: var(--font-mono); font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .month-nav .arrows { display: flex; }
+  .wk { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; padding: 0 12px 6px; }
+  .wk span { text-align: center; font-family: var(--font-mono); font-size: 11px; color: var(--muted); letter-spacing: .04em; }
+  .cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; padding: 0 12px; }
+  .cell { aspect-ratio: 1; border-radius: 11px; border: 0; padding: 5px 6px; background: var(--empty); color: var(--muted);
+    font-family: var(--font-mono); font-size: 11px; text-align: left; display: flex; align-items: flex-start; justify-content: flex-start; position: relative; }
+  .cell.has { background: var(--mc); color: var(--on); cursor: pointer; transition: transform var(--dur-press) var(--ease-out); }
+  .cell.has:hover { transform: scale(1.07); }
+  .cell.future { background: transparent; box-shadow: inset 0 0 0 1px var(--border); }
+  .cell.today { box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--fg); }
+  .cell.blank { background: transparent; }
+  .cell .lk { position: absolute; right: 5px; bottom: 5px; width: 11px; height: 11px; stroke-width: 2.2; opacity: .75; }
+  .legend { display: flex; flex-wrap: wrap; gap: 8px 14px; padding: 18px 20px 0; }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+  .legend i { width: 12px; height: 12px; border-radius: 4px; background: var(--mc); }
+  .hint { margin: 14px 20px 0; display: flex; gap: 8px; align-items: flex-start; font-size: 13px; color: var(--muted); text-wrap: pretty; }
+  .hint .icon { width: 16px; height: 16px; margin-top: 1px; }
+
+  .year-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 0 20px; }
+  .mini { border: 1px solid var(--border); background: var(--surface); border-radius: 14px; padding: 8px 8px 9px; cursor: pointer; text-align: left; }
+  .mini:hover { border-color: var(--fg); }
+  .mini.off { cursor: default; opacity: .55; }
+  .mini.off:hover { border-color: var(--border); }
+  .mini .mn { font-size: 12px; font-weight: 600; margin-bottom: 6px; display: flex; justify-content: space-between; }
+  .mini .mn em { font-style: normal; font-family: var(--font-mono); font-weight: 400; color: var(--muted); font-size: 11px; }
+  .mini .g { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+  .mini .g i { aspect-ratio: 1; border-radius: 3px; background: var(--empty); }
+  .mini .g i.has { background: var(--mc); }
+  .mini .g i.blank { background: transparent; }
+
+  /* ─── İstatistik ─── */
+  .stack-bar { display: flex; height: 18px; border-radius: 999px; overflow: hidden; gap: 2px; margin: 4px 0 2px; }
+  .stack-bar span { background: var(--mc); }
+  .dist { display: grid; gap: 2px; margin-top: 14px; }
+  .dist-row { display: grid; grid-template-columns: 14px 1fr auto; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid var(--border); }
+  .dist-row:first-child { border-top: 0; }
+  .dist-row i { width: 14px; height: 14px; border-radius: 5px; background: var(--mc); }
+  .dist-row .nm { font-size: 15px; }
+  .dist-row .nm small { display: block; margin-top: 5px; height: 5px; border-radius: 999px; background: var(--empty); overflow: hidden; }
+  .dist-row .nm small b { display: block; height: 100%; background: var(--mc); border-radius: inherit; }
+  .dist-row .pc { font-family: var(--font-mono); font-size: 15px; font-weight: 600; text-align: right; min-width: 48px; }
+  .dist-row .pc span { display: block; font-size: 11px; font-weight: 400; color: var(--muted); }
+  .dist-row.zero { opacity: .55; }
+  .big-num { font-family: var(--font-display); font-size: 40px; font-weight: 500; letter-spacing: -0.02em; line-height: 1; }
+  .empty-state { text-align: center; padding: 36px 16px 30px; }
+  .empty-state .ring { width: 72px; height: 72px; border-radius: 50%; margin: 0 auto 16px; border: 2px dashed var(--border); }
+  .empty-state p { margin: 6px 0 0; color: var(--muted); font-size: 14px; text-wrap: pretty; }
+
+  /* ─── NavigationBar (Material 3) ─── */
+  .navbar { flex: none; display: grid; grid-template-columns: repeat(3, 1fr); padding: 10px 8px 4px; background: var(--surface); border-top: 1px solid var(--border); }
+  .nav-item { display: grid; justify-items: center; gap: 4px; min-height: 60px; border: 0; background: none; cursor: pointer; font-size: 12px; color: var(--muted); padding: 0; }
+  .nav-item .ind { width: 64px; height: 32px; border-radius: 999px; display: grid; place-items: center; transition: background .15s; }
+  .nav-item:hover .ind { background: var(--tonal); }
+  .nav-item[aria-current="page"] { color: var(--fg); font-weight: 600; }
+  .nav-item[aria-current="page"] .ind { background: var(--surface-warm); }
+  .nav-item .icon { width: 22px; height: 22px; }
+  .nav-item:focus-visible { outline: none; }
+  .nav-item:focus-visible .ind { outline: 2px solid var(--fg); outline-offset: 1px; }
+
+  /* ─── modal bottom sheet + dialog ─── */
+  .scrim { position: absolute; inset: 0; background: var(--scrim); z-index: 20; opacity: 0; animation: fade var(--dur-ui) var(--ease-out) forwards; }
+  .sheet { position: absolute; left: 0; right: 0; bottom: 0; z-index: 21; background: var(--surface); border-radius: 28px 28px 0 0; padding: 10px 20px 34px;
+    animation: sheet-in var(--dur-sheet) var(--ease-drawer) both; }
+  .sheet .handle { width: 32px; height: 4px; border-radius: 999px; background: var(--muted); opacity: .5; margin: 4px auto 14px; }
+  .sheet-head { display: flex; align-items: center; gap: 16px; }
+  .sheet-head .sw { width: 64px; height: 64px; border-radius: 20px; background: var(--mc); flex: none; }
+  .sheet-head .meta { display: block; margin-bottom: 4px; }
+  .sheet-close { position: absolute; top: 14px; right: 12px; }
+  .sheet-body { margin-top: 20px; }
+  .quote { font-family: var(--font-display); font-size: 21px; line-height: 1.35; letter-spacing: -0.01em; margin: 0; text-wrap: pretty; }
+  .quote.none { font-family: var(--font-body); font-size: 15px; color: var(--muted); }
+  .locked-note { display: grid; gap: 10px; }
+  .redacted { display: grid; gap: 7px; margin-bottom: 4px; }
+  .redacted i { height: 12px; border-radius: 6px; background: var(--empty); }
+  .dialog { position: absolute; left: 24px; right: 24px; top: 50%; z-index: 21; background: var(--surface); border-radius: 28px; padding: 24px 24px 16px;
+    transform: translateY(-50%); animation: dlg-in var(--dur-ui) var(--ease-out) both; }
+  .dialog h2 { font-family: var(--font-display); font-weight: 500; font-size: 22px; margin: 0 0 10px; letter-spacing: -0.01em; }
+  .dialog p { margin: 0; color: var(--muted); font-size: 15px; text-wrap: pretty; }
+  .dialog .preview { display: flex; align-items: center; gap: 10px; margin: 16px 0 4px; padding: 10px 12px; border-radius: 14px; background: var(--tonal); font-size: 14px; }
+  .dialog .preview i { width: 18px; height: 18px; border-radius: 6px; background: var(--mc); flex: none; }
+  .dialog .actions { display: flex; justify-content: flex-end; gap: 4px; margin-top: 18px; }
+  .dialog .actions .confirm { background: var(--accent); color: var(--on-accent); padding-inline: 20px; }
+  .dialog .actions .confirm:hover { background: var(--accent-hover); }
+  @keyframes fade { to { opacity: 1; } }
+  @keyframes sheet-in { from { transform: translateY(100%); } }
+  @keyframes dlg-in { from { opacity: 0; transform: translateY(-50%) scale(0.96); } }
+
+  .snack { position: absolute; left: 16px; right: 16px; bottom: 108px; z-index: 19; background: var(--fg); color: var(--bg); border-radius: 12px; padding: 13px 16px; font-size: 14px; animation: fade .2s forwards; opacity: 0; }
+
+  @media (max-width: 460px) {
+    body { padding: 24px 0 40px; }
+    .page-head { padding: 0 16px; }
+    .stage-row { gap: 40px; }
+    .device { transform: scale(.86); transform-origin: top center; margin-bottom: -118px; }
+  }
+
+  /* ═══ Hareket katmanı — tek dil: güçlü ease-out, <300ms UI, yalnızca transform/opacity ═══ */
+  :root {
+    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);      /* giren/çıkan UI */
+    --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);   /* alttan açılan paneller */
+    --dur-press: 160ms; --dur-ui: 200ms; --dur-sheet: 300ms;
+  }
+  @keyframes enter-up { from { opacity: 0; transform: translateY(8px); } }
+  @keyframes fade-in { from { opacity: 0; } }
+  /* basınca geri bildirim (0.97) — dokunmatikte de çalışır */
+  .btn-primary:active:not(:disabled), .btn-text:active:not(:disabled), .icon-btn:active:not(:disabled) { transform: scale(0.97); }
+  /* bildirim (snack): keyframe yerine kesilebilir geçiş */
+  .snack { animation: none; opacity: 1; transform: none; transition: opacity var(--dur-ui) var(--ease-out), transform var(--dur-ui) var(--ease-out); }
+  @starting-style { .snack { opacity: 0; transform: translateY(8px); } }
+
+  .btn-primary { transition: background-color var(--dur-press) var(--ease-out), transform var(--dur-press) var(--ease-out); }
+  .btn-text, .icon-btn, .seg button, .mini, .reset-link { transition: background-color var(--dur-press) var(--ease-out), border-color var(--dur-press) var(--ease-out), transform var(--dur-press) var(--ease-out); }
+  .seg button:active, .mini:not(.off):active, .reset-link:active { transform: scale(0.97); }
+  .swatch:active .dot { transform: scale(0.94); }
+  .cell.has:active { transform: scale(0.96); }
+  .nav-item .ind { transition: background-color var(--dur-ui) var(--ease-out), transform var(--dur-press) var(--ease-out); }
+  .nav-item:active .ind { transform: scale(0.94); }
+  /* hover büyütmeleri yalnızca fare ile */
+  @media not all and (hover: hover) and (pointer: fine) { .swatch:hover .dot, .cell.has:hover { transform: none; } }
+  /* renk dairesi: seçim yeniden çizildiğinde kısa bir yerleşme */
+  .orb.filled { animation: pop-in 240ms var(--ease-out); }
+  .orb.saved-now { animation: pop-in 320ms var(--ease-out); }
+  @keyframes pop-in { from { transform: scale(0.94); opacity: 0.7; } }
+  /* sekme değişimi: ilk birkaç blok 40ms arayla gelir */
+  .content.enter > * { animation: enter-up 240ms var(--ease-out) both; }
+  .content.enter > :nth-child(2) { animation-delay: 40ms; }
+  .content.enter > :nth-child(3) { animation-delay: 80ms; }
+  .content.enter > :nth-child(n+4) { animation-delay: 120ms; }
+  .scrim { transition: none; }
+
+  /* Kapsül açılış anı (ilk görünüm, tek sefer): renk, kutudan halka olarak yayılır, not ardından belirir */
+  .sheet-head .sw { position: relative; }
+  .sheet.unseal .sw::after { content: ''; position: absolute; inset: 0; border-radius: inherit; border: 3px solid var(--mc); animation: ring-out 640ms var(--ease-out) both; }
+  @keyframes ring-out { from { transform: scale(1); opacity: .7; } to { transform: scale(1.9); opacity: 0; } }
+  .reveal { background: var(--mc); color: var(--on); border-radius: 20px; padding: 18px 20px; animation: unseal 560ms var(--ease-out) both; }
+  @keyframes unseal { from { clip-path: circle(0 at 32px -56px); } to { clip-path: circle(170% at 32px -56px); } }
+  .reveal .quote { animation: fade-in 300ms var(--ease-out) 320ms both; }
+  .reveal .quote.none { color: inherit; }
+  .cell.fresh::after { content: ''; position: absolute; right: 5px; bottom: 5px; width: 7px; height: 7px; border-radius: 50%; background: var(--on); }
+
+  /* hareket azaltma: hareketi kaldır, solmayı koru */
+  @media (prefers-reduced-motion: reduce) {
+    @keyframes enter-up { from { opacity: 0; } }
+    @keyframes sheet-in { from { opacity: 0; } }
+    @keyframes dlg-in { from { opacity: 0; } }
+    @keyframes pop-in { from { opacity: 0; } }
+    @keyframes dot-pop { from { opacity: 0.4; } }
+    @keyframes unseal { from { opacity: 0; } to { opacity: 1; } }
+    .sheet.unseal .sw::after { display: none; }
+    *, *::before, *::after { transition-property: opacity, color, background-color, border-color, box-shadow !important; }
+    .pin.shake { animation: none !important; }
+    @starting-style { .snack { transform: none; } }
+  }
+</style>
+</head>
+<body>
+  <header class="page-head" data-od-id="page-head">
+    <div>
+      <h1 data-od-id="page-title">Digura</h1>
+      <p>Duygu Haritası & Dijital Zaman Kapsülü. Günde bir renk ve tek bir cümle. Notlar 30 gün boyunca kilitli kalır.</p>
+      <p class="facts">BUGÜN 25 EKİM 2026<br>ÖRNEK VERİ · 1 AĞUSTOS – 24 EKİM 2026</p>
+    </div>
+    <button class="reset-link" id="reset" data-od-id="reset-demo">Örnek veriye dön</button>
+  </header>
+
+  <div class="stage-row">
+    <div class="stage" data-od-id="stage-light">
+      <div class="caption" data-theme-label="light"><strong>Açık tema</strong> · ThemeMode.light</div>
+      <div class="device" data-mount="light" data-od-id="device-light"></div>
+    </div>
+    <div class="stage" data-od-id="stage-dark">
+      <div class="caption" data-theme-label="dark"><strong>Koyu tema</strong> · ThemeMode.dark</div>
+      <div class="device" data-mount="dark" data-od-id="device-dark"></div>
+    </div>
+  </div>
+
+<template id="frame">
+  <span class="btn-rail left-1" aria-hidden="true"></span><span class="btn-rail left-2" aria-hidden="true"></span>
+  <span class="btn-rail left-3" aria-hidden="true"></span><span class="btn-rail right-1" aria-hidden="true"></span>
+  <span class="island" aria-hidden="true"></span>
+  <div class="screen">
+    <div class="statusbar">
+      <span class="num">9:41</span>
+      <span class="right">
+        <svg viewBox="0 0 17 11" aria-hidden="true"><rect x="0" y="7" width="3" height="4" rx="0.6"/><rect x="4" y="5" width="3" height="6" rx="0.6"/><rect x="8" y="3" width="3" height="8" rx="0.6"/><rect x="12" y="0" width="3" height="11" rx="0.6"/></svg>
+        <svg viewBox="0 0 17 11" aria-hidden="true"><path d="M8.5 1.5C5.5 1.5 2.7 2.6 0.5 4.6L2 6.1C3.8 4.5 6.1 3.6 8.5 3.6c2.4 0 4.7 0.9 6.5 2.5l1.5-1.5c-2.2-2-5-3.1-8-3.1zM3.5 7.6L5 9.1c1-0.9 2.2-1.4 3.5-1.4 1.3 0 2.5 0.5 3.5 1.4l1.5-1.5c-1.4-1.3-3.1-2-5-2-1.9 0-3.6 0.7-5 2zM6.5 10.6l2 2 2-2c-0.5-0.5-1.2-0.8-2-0.8s-1.5 0.3-2 0.8z"/></svg>
+        <svg class="battery" viewBox="0 0 25 11" aria-hidden="true"><rect x="0.5" y="0.5" width="21" height="10" rx="2.5" fill="none" stroke="currentColor" stroke-opacity="0.45"/><rect x="22" y="3.5" width="1.5" height="4" rx="0.4" fill="currentColor" fill-opacity="0.45"/><rect x="2" y="2" width="18" height="7" rx="1.4"/></svg>
+      </span>
+    </div>
+    <main class="content" data-role="content"></main>
+    <nav class="navbar" data-role="nav" aria-label="Ana gezinme"></nav>
+    <div class="home-indicator" aria-hidden="true"></div>
+    <div data-role="overlay"></div>
+  </div>
+</template>
+
+<script>
+(() => {
+  /* ── core/constants ── */
+  const MAX_NOTE = 140, LOCK_DAYS = 30, DAY = 86400000;
+  const MOODS = [
+    { id: 'joyful', label: 'Neşeli' },
+    { id: 'calmSad', label: 'Sakin / Hüzünlü' },
+    { id: 'angryStressed', label: 'Öfkeli / Stresli' },
+    { id: 'serene', label: 'Dingin' },
+    { id: 'tired', label: 'Yorgun' },
+  ];
+  const MOOD = Object.fromEntries(MOODS.map(m => [m.id, m]));
+  const MONTHS = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+  const DAYS = ['Pazar','Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi'];
+  const WK = ['Pt','Sa','Ça','Pe','Cu','Ct','Pz'];
+
+  /* ── core/utils: clock + dateOnly (UTC y/m/d) ── */
+  const TODAY = Date.UTC(2026, 9, 25);
+  const ymd = t => { const d = new Date(t); return [d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()]; };
+  const dayKey = t => { const [y, m, d] = ymd(t); return `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`; };
+  const fmtLong = t => { const [y, m, d] = ymd(t); return `${d} ${MONTHS[m]} ${y}`; };
+  const weekday = t => DAYS[new Date(t).getUTCDay()];
+  const unlockOf = t => t + LOCK_DAYS * DAY;
+  const remaining = t => Math.round((unlockOf(t) - TODAY) / DAY);
+  const isUnlocked = t => TODAY >= unlockOf(t);
+
+  /* ── örnek veri (deterministik) ── */
+  const NOTES = {
+    joyful: ['Annemle uzun bir kahvaltı yaptık, saatlerce güldük.', 'Sunumum beklediğimden çok daha iyi geçti.', 'Sahilde yürürken eski bir arkadaşa rastladım.', 'İlk kez kendi ekmeğimi pişirdim ve gerçekten güzel oldu.', 'Meryem\'le planladığımız konsere bilet bulduk!'],
+    calmSad: ['Yağmuru izleyip eski fotoğraflara baktım.', 'Dedemi özledim, akşam onun sevdiği şarkıyı dinledim.', 'Bugün biraz içime kapandım ama kötü değildi.', 'Arkadaşım başka şehre taşındı, ev sessiz.'],
+    angryStressed: ['Teslim tarihi bir gün öne çekildi, gün boyu koştum.', 'Trafikte iki saat kaldım ve toplantıyı kaçırdım.', 'Kod derlenmedi, sebebini gece yarısı buldum.', 'Kira artışı haberi bütün günü bozdu.'],
+    serene: ['Telefonu bırakıp parkta kitap okudum.', 'Sabah koşusundan sonra her şey yerli yerinde gibiydi.', 'Balkondaki fesleğen nihayet çiçek açtı.', 'Akşam çayı, battaniye ve hiçbir plan.', 'Uzun bir yoga seansı, zihnim sakin.'],
+    tired: ['Gece iyi uyuyamadım, gün çok uzun geçti.', 'Üç ders üst üste, kafam tamamen doldu.', 'Taşınma kolilerini kaldırmaktan bitkinim.', ''],
+  };
+  function seedEntries() {
+    let s = 7; const rnd = () => (s = (s * 16807) % 2147483647) / 2147483647;
+    const weights = [['joyful', .26], ['serene', .24], ['calmSad', .18], ['tired', .18], ['angryStressed', .14]];
+    const out = {};
+    for (let t = Date.UTC(2026, 7, 1); t < TODAY; t += DAY) {
+      if (rnd() < .16) continue;
+      let r = rnd(), mood = 'joyful';
+      for (const [id, w] of weights) { if ((r -= w) <= 0) { mood = id; break; } }
+      const pool = NOTES[mood]; const note = rnd() < .12 ? '' : pool[Math.floor(rnd() * pool.length)];
+      out[dayKey(t)] = { id: dayKey(t), entryDate: t, mood, note };
+    }
+    return out;
+  }
+  const STORE_KEY = 'digura.proto.v1';
+  function load() {
+    try { const v = JSON.parse(localStorage.getItem(STORE_KEY)); if (v && v.entries) return v.entries; } catch (e) {}
+    return seedEntries();
+  }
+  /* core/data/mood_repository — tek erişim noktası */
+  const repo = {
+    entries: load(),
+    get(key) { return this.entries[key] || null; },
+    add(entry) {
+      if (this.entries[entry.id]) return false;            // günde 1 kayıt
+      this.entries[entry.id] = { ...entry, note: entry.note.slice(0, MAX_NOTE) };
+      localStorage.setItem(STORE_KEY, JSON.stringify({ entries: this.entries }));
+      return true;
+    },
+    reset() { localStorage.removeItem(STORE_KEY); this.entries = seedEntries(); },
+    month(y, m) { return Object.values(this.entries).filter(e => { const [ey, em] = ymd(e.entryDate); return ey === y && em === m; }); },
+  };
+
+  /* ── icons ── */
+  const I = {
+    sun: '<path d="M12 3v2M12 19v2M5 12H3M21 12h-2M6.3 6.3 4.9 4.9M19.1 19.1l-1.4-1.4M6.3 17.7l-1.4 1.4M19.1 4.9l-1.4 1.4"/><circle cx="12" cy="12" r="4"/>',
+    grid: '<rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/>',
+    chart: '<path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/>',
+    lock: '<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+    unlock: '<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 7.5-2"/>',
+    check: '<path d="m5 12.5 4.5 4.5L19 7.5"/>',
+    left: '<path d="m15 18-6-6 6-6"/>', right: '<path d="m9 18 6-6-6-6"/>',
+    close: '<path d="M6 6l12 12M18 6 6 18"/>',
+    shield: '<path d="M12 3 5 6v5c0 4.5 3 8 7 10 4-2 7-5.5 7-10V6l-7-3z"/>',
+    plus: '<circle cx="12" cy="12" r="1.2"/>',
+    gear: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>',
+  };
+  const ic = (n, cls = '') => `<svg class="icon ${cls}" viewBox="0 0 24 24" aria-hidden="true">${I[n]}</svg>`;
+  const mc = id => `--mc: var(--m-${id}); --on: var(--on-${id});`;
+  const esc = s => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+  const instances = [];
+  const renderAll = () => instances.forEach(a => a.render());
+
+  /* ── App instance ── */
+  function App(mount, theme) {
+    mount.appendChild(document.getElementById('frame').content.cloneNode(true));
+    const screen = mount.querySelector('.screen');
+    if (theme === 'dark') screen.classList.add('theme-dark');
+    screen.dataset.base = theme;
+    const $content = screen.querySelector('[data-role=content]');
+    const $nav = screen.querySelector('[data-role=nav]');
+    const $overlay = screen.querySelector('[data-role=overlay]');
+    $content.dataset.odId = `content-${theme}`; $nav.dataset.odId = `navbar-${theme}`;
+    const [ty, tm] = ymd(TODAY);
+    const st = { tab: 'today', mapMode: 'month', map: { y: ty, m: tm }, stats: { y: ty, m: tm }, draft: { mood: null, note: '' }, sheet: null, confirm: false, snack: '' };
+    let snackTimer;
+    const OPEN_KEY = `digura.proto.opened.${theme}`;
+    const opened = new Set();
+    try { JSON.parse(localStorage.getItem(OPEN_KEY) || '[]').forEach(k => opened.add(k)); } catch (e) {}
+    const markOpened = k => { opened.add(k); try { localStorage.setItem(OPEN_KEY, JSON.stringify([...opened])); } catch (e) {} };
+
+    /* features/home — NavigationBar */
+    const TABS = [['today', 'Bugün', 'sun'], ['map', 'Harita', 'grid'], ['stats', 'İstatistik', 'chart']];
+    function renderNav() {
+      $nav.innerHTML = TABS.map(([id, l, i]) => `<button class="nav-item" data-act="tab" data-v="${id}" data-od-id="nav-${id}-${theme}" ${st.tab === id ? 'aria-current="page"' : ''}><span class="ind">${ic(i)}</span>${l}</button>`).join('');
+    }
+
+    /* features/mood_entry */
+    function viewToday() {
+      const head = `<div class="header has-gear" data-od-id="today-header-${theme}"><a class="icon-btn gear" href="digura-kilit.html#ayarlar" aria-label="Ayarlar" data-od-id="settings-gear-${theme}">${ic('gear')}</a><p class="greeting">${fmtLong(TODAY)} · ${weekday(TODAY)}</p>`;
+      const saved = repo.get(dayKey(TODAY));
+      if (saved) {
+        const rem = remaining(saved.entryDate);
+        return `${head}<h1>Bugünün rengi kaydedildi</h1></div>
+          <div class="orb-wrap" style="${mc(saved.mood)}"><div class="orb filled ${st.savedNow ? 'saved-now' : ''}">${ic('check')}</div>
+            <div class="orb-label"><p class="h2">${MOOD[saved.mood].label}</p><p class="meta" style="margin:6px 0 0">Kayıt kalıcıdır · düzenlenemez</p></div></div>
+          <div class="card saved-card" data-od-id="today-capsule-${theme}">
+            <div class="capsule-line"><span class="lock-badge">${ic('lock')}</span>
+              <div><strong>${saved.note ? 'Notun kapsüle kilitlendi' : 'Bugün not bırakmadın'}</strong><span>Açılış: <span class="num">${fmtLong(unlockOf(saved.entryDate))}</span></span></div></div>
+            <div class="bar" aria-hidden="true"><span style="width:${((LOCK_DAYS - rem) / LOCK_DAYS) * 100}%"></span></div>
+            <div class="meta" style="display:flex;justify-content:space-between"><span>Kapsülün açılmasına ${rem} gün kaldı</span><span>0/${LOCK_DAYS}</span></div>
+          </div>
+          <div class="pad" style="padding-top:14px;display:flex;justify-content:center"><button class="btn-text" data-act="tab" data-v="map" data-od-id="go-map-${theme}">Haritada gör ${ic('right')}</button></div>
+          <p class="hint" style="justify-content:center">Yarın yeni bir renk seçebilirsin.</p>`;
+      }
+      const d = st.draft, sel = d.mood ? MOOD[d.mood] : null;
+      return `${head}<h1>Bugün nasıldın?</h1></div>
+        <div class="orb-wrap" ${sel ? `style="${mc(sel.id)}"` : ''} data-od-id="mood-orb-${theme}">
+          <div class="orb ${sel ? 'filled' : ''}">${sel ? '' : ic('plus')}</div>
+          <div class="orb-label" aria-live="polite"><p class="h2" ${sel ? '' : 'style="color:var(--muted)"'}>${sel ? sel.label : 'Bir renk seç'}</p><p class="meta" style="margin:6px 0 0">${sel ? 'Seçilen duygu' : 'Renk zorunlu, not isteğe bağlı'}</p></div>
+        </div>
+        <div class="swatches" role="radiogroup" aria-label="Duygu rengi" data-od-id="mood-picker-${theme}">
+          ${MOODS.map(m => `<button class="swatch" role="radio" aria-checked="${d.mood === m.id}" data-act="mood" data-v="${m.id}" style="${mc(m.id)}" data-od-id="mood-${m.id}-${theme}"><span class="dot">${ic('check')}</span><span class="lbl">${m.label.replace(' / ', ' /<br>')}</span></button>`).join('')}
+        </div>
+        <div class="note-field" data-od-id="note-field-${theme}">
+          <label for="note-${theme}">Tek cümlelik not · isteğe bağlı</label>
+          <textarea id="note-${theme}" maxlength="${MAX_NOTE}" rows="2" placeholder="Bugünü tek cümleyle anlat…">${esc(d.note)}</textarea>
+          <div class="note-foot"><span class="lockline">${ic('lock')} 30 gün kilitli kalır</span><span class="count num ${d.note.length >= MAX_NOTE ? 'limit' : ''}">${d.note.length}/${MAX_NOTE}</span></div>
+        </div>
+        <div class="save-row"><button class="btn-primary" data-act="ask" ${d.mood ? '' : 'disabled'} data-od-id="save-cta-${theme}">Rengi kaydet</button></div>`;
+    }
+
+    /* features/mood_calendar */
+    function monthCells(y, m, mini) {
+      const first = Date.UTC(y, m, 1), lead = (new Date(first).getUTCDay() + 6) % 7, n = new Date(Date.UTC(y, m + 1, 0)).getUTCDate();
+      let h = '';
+      for (let i = 0; i < lead; i++) h += mini ? '<i class="blank"></i>' : '<span class="cell blank"></span>';
+      for (let d = 1; d <= n; d++) {
+        const t = Date.UTC(y, m, d), e = repo.get(dayKey(t));
+        if (mini) { h += e ? `<i class="has" style="${mc(e.mood)}"></i>` : '<i></i>'; continue; }
+        const today = t === TODAY ? ' today' : '';
+        if (e) { const fresh = isUnlocked(t) && TODAY - unlockOf(t) < 7 * DAY && !opened.has(e.id);
+          h += `<button class="cell has${today}${fresh ? ' fresh' : ''}" style="${mc(e.mood)}" data-act="day" data-v="${e.id}" aria-label="${d} ${MONTHS[m]}, ${MOOD[e.mood].label}${isUnlocked(t) ? (fresh ? ', yeni açıldı' : '') : ', kilitli'}">${d}${isUnlocked(t) ? '' : ic('lock', 'lk')}</button>`; }
+        else h += `<span class="cell${t > TODAY ? ' future' : ''}${today}">${d}</span>`;
+      }
+      return h;
+    }
+    function viewMap() {
+      const seg = `<div class="seg" role="group" aria-label="Görünüm" data-od-id="map-mode-${theme}">
+        <button data-act="mode" data-v="month" aria-pressed="${st.mapMode === 'month'}">${st.mapMode === 'month' ? ic('check') : ''}Ay</button>
+        <button data-act="mode" data-v="year" aria-pressed="${st.mapMode === 'year'}">${st.mapMode === 'year' ? ic('check') : ''}Yıl</button></div>`;
+      const head = `<div class="header" data-od-id="map-header-${theme}"><p class="greeting">Renk haritası</p><h1>Harita</h1></div>`;
+      const legend = `<div class="legend" data-od-id="map-legend-${theme}">${MOODS.map(m => `<span style="${mc(m.id)}"><i></i>${m.label}</span>`).join('')}<span style="--mc: var(--empty)"><i style="box-shadow: inset 0 0 0 1px var(--border)"></i>Kayıt yok</span></div>`;
+      if (st.mapMode === 'year') {
+        const y = ty, total = Object.values(repo.entries).filter(e => ymd(e.entryDate)[0] === y).length;
+        return `${head}${seg}
+          <div class="month-nav"><div><span class="title num">${y}</span><span class="sub">${total} gün renklendi</span></div></div>
+          <div class="year-grid" data-od-id="year-heatmap-${theme}">${MONTHS.map((n, m) => {
+            const off = Date.UTC(y, m, 1) > TODAY, c = repo.month(y, m).length;
+            return `<button class="mini${off ? ' off' : ''}" ${off ? 'disabled' : `data-act="openMonth" data-v="${m}"`} aria-label="${n} ${y}, ${c} kayıt"><div class="mn">${n.slice(0, 3)}<em>${c || ''}</em></div><div class="g">${monthCells(y, m, true)}</div></button>`;
+          }).join('')}</div>${legend}`;
+      }
+      const { y, m } = st.map, n = new Date(Date.UTC(y, m + 1, 0)).getUTCDate(), c = repo.month(y, m).length;
+      const canNext = Date.UTC(y, m + 1, 1) <= TODAY, canPrev = y > 2026 || m > 0;
+      return `${head}${seg}
+        <div class="month-nav" data-od-id="map-month-nav-${theme}"><div><span class="title">${MONTHS[m]} ${y}</span><span class="sub">${c} / ${n} gün renklendi</span></div>
+          <div class="arrows"><button class="icon-btn" data-act="mapMonth" data-v="-1" aria-label="Önceki ay" ${canPrev ? '' : 'disabled'}>${ic('left')}</button><button class="icon-btn" data-act="mapMonth" data-v="1" aria-label="Sonraki ay" ${canNext ? '' : 'disabled'}>${ic('right')}</button></div></div>
+        <div class="wk" aria-hidden="true">${WK.map(w => `<span>${w}</span>`).join('')}</div>
+        <div class="cal" data-od-id="month-heatmap-${theme}">${monthCells(y, m, false)}</div>
+        ${legend}
+        <p class="hint">${ic('lock')}<span>Kilit simgeli günlerin notları, kayıttan 30 gün sonra açılır. Noktalı günlerin kapsülü yeni açıldı; dokunarak aç.</span></p>`;
+    }
+
+    /* features/mood_stats */
+    function viewStats() {
+      const { y, m } = st.stats, list = repo.month(y, m), total = list.length;
+      const canNext = Date.UTC(y, m + 1, 1) <= TODAY, canPrev = y > 2026 || m > 0;
+      const nav = `<div class="month-nav" data-od-id="stats-month-nav-${theme}"><div><span class="title">${MONTHS[m]} ${y}</span><span class="sub">Aylık duygu dağılımı</span></div>
+        <div class="arrows"><button class="icon-btn" data-act="statsMonth" data-v="-1" aria-label="Önceki ay" ${canPrev ? '' : 'disabled'}>${ic('left')}</button><button class="icon-btn" data-act="statsMonth" data-v="1" aria-label="Sonraki ay" ${canNext ? '' : 'disabled'}>${ic('right')}</button></div></div>`;
+      const head = `<div class="header" data-od-id="stats-header-${theme}"><p class="greeting">Yalnızca renkler</p><h1>İstatistik</h1></div>`;
+      const privacy = `<p class="hint">${ic('shield')}<span>İstatistikler yalnızca renkleri kullanır. Kilitli notlarına erişilmez, veriler cihazından çıkmaz.</span></p>`;
+      if (!total) return `${head}${nav}<div class="pad"><div class="card empty-state" data-od-id="stats-empty-${theme}"><div class="ring"></div><p class="h2" style="color:var(--fg)">Bu ay henüz kayıt yok</p><p>Günün rengini seçtiğinde dağılım burada görünecek.</p></div></div>${privacy}`;
+      const rows = MOODS.map(md => { const c = list.filter(e => e.mood === md.id).length; return { ...md, c, p: Math.round(c / total * 100) }; }).sort((a, b) => b.c - a.c);
+      const top = rows[0];
+      return `${head}${nav}
+        <div class="pad"><div class="card" data-od-id="stats-card-${theme}">
+          <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:12px">
+            <div><div class="big-num num">${total}</div><div class="meta" style="margin-top:4px">kayıt bu ay</div></div>
+            <div style="text-align:right"><div class="meta">En sık</div><div style="font-weight:600;margin-top:2px">%${top.p} ${top.label}</div></div></div>
+          <div class="stack-bar" role="img" aria-label="Duygu dağılımı">${rows.filter(r => r.c).map(r => `<span style="${mc(r.id)} flex:${r.c}"></span>`).join('')}</div>
+          <div class="dist">${rows.map(r => `<div class="dist-row${r.c ? '' : ' zero'}" style="${mc(r.id)}" data-od-id="dist-${r.id}-${theme}"><i></i><div class="nm">${r.label}<small><b style="width:${r.p}%"></b></small></div><div class="pc">%${r.p}<span>${r.c} gün</span></div></div>`).join('')}</div>
+        </div></div>${privacy}`;
+    }
+
+    /* Kapsül Detay Modalı (showModalBottomSheet) + onay diyaloğu */
+    function renderOverlay() {
+      let h = '';
+      const modal = !!(st.sheet || st.confirm);
+      $content.toggleAttribute('inert', modal); $nav.toggleAttribute('inert', modal);
+      if (st.sheet) {
+        const e = repo.get(st.sheet), open = isUnlocked(e.entryDate), rem = remaining(e.entryDate);
+        const body = open
+          ? `<div class="meta" style="display:flex;align-items:center;gap:6px;margin-bottom:10px">${ic('unlock')} Kapsül açıldı · ${fmtLong(unlockOf(e.entryDate))}</div>
+             <div class="${st.unseal ? 'reveal' : ''}">${e.note ? `<p class="quote">“${esc(e.note)}”</p>` : '<p class="quote none">Bu gün için not bırakılmamış.</p>'}</div>`
+          : `<div class="locked-note"><div class="redacted" aria-hidden="true"><i style="width:92%"></i><i style="width:64%"></i></div>
+              <div class="capsule-line"><span class="lock-badge">${ic('lock')}</span><div><strong>Kapsülün açılmasına ${rem} gün kaldı</strong><span>Açılış: <span class="num">${fmtLong(unlockOf(e.entryDate))}</span></span></div></div>
+              <div class="bar"><span style="width:${((LOCK_DAYS - rem) / LOCK_DAYS) * 100}%"></span></div></div>`;
+        h += `<div class="scrim" data-act="close"></div>
+          <div class="sheet${st.unseal ? ' unseal' : ''}" role="dialog" aria-modal="true" aria-label="Kapsül detayı" style="${mc(e.mood)}" data-od-id="capsule-sheet-${theme}">
+            <div class="handle"></div><button class="icon-btn sheet-close" data-act="close" aria-label="Kapat">${ic('close')}</button>
+            <div class="sheet-head"><span class="sw"></span><div><span class="meta">${fmtLong(e.entryDate)} · ${weekday(e.entryDate)}</span><p class="h2">${MOOD[e.mood].label}</p></div></div>
+            <div class="sheet-body">${body}</div></div>`;
+      }
+      if (st.confirm) {
+        const md = MOOD[st.draft.mood];
+        h += `<div class="scrim" data-act="cancel"></div>
+          <div class="dialog" role="alertdialog" aria-modal="true" aria-labelledby="dlg-${theme}" data-od-id="confirm-dialog-${theme}">
+            <h2 id="dlg-${theme}">Bugünün rengi kaydedilsin mi?</h2>
+            <p>Zaman kapsülü gereği bu kayıt sonradan düzenlenemez veya silinemez. Notun 30 gün kilitli kalır.</p>
+            <div class="preview" style="${mc(md.id)}"><i></i><span><strong>${md.label}</strong> · ${st.draft.note.trim() ? 'notlu' : 'notsuz'}</span></div>
+            <div class="actions"><button class="btn-text" data-act="cancel">Vazgeç</button><button class="btn-text confirm" data-act="save" data-od-id="confirm-save-${theme}">Kaydet</button></div></div>`;
+      }
+      if (st.snack) h += `<div class="snack" role="status">${st.snack}</div>`;
+      $overlay.innerHTML = h;
+      const focusEl = $overlay.querySelector('.confirm, .sheet-close'); if (focusEl) focusEl.focus({ preventScroll: true });
+    }
+
+    this.render = () => {
+      renderNav();
+      $content.innerHTML = st.tab === 'today' ? viewToday() : st.tab === 'map' ? viewMap() : viewStats();
+      if (st.enter) { $content.classList.remove('enter'); void $content.offsetWidth; $content.classList.add('enter'); st.enter = false; clearTimeout(this._enterT); this._enterT = setTimeout(() => $content.classList.remove('enter'), 500); }
+      renderOverlay();
+    };
+
+    const shift = (o, dir) => { let m = o.m + dir, y = o.y; if (m < 0) { m = 11; y--; } if (m > 11) { m = 0; y++; } o.y = y; o.m = m; };
+    screen.addEventListener('click', ev => {
+      const b = ev.target.closest('[data-act]'); if (!b || b.disabled) return;
+      const v = b.dataset.v;
+      switch (b.dataset.act) {
+        case 'tab': if (st.tab !== v) st.enter = true; st.tab = v; $content.scrollTop = 0; break;
+        case 'mood': st.draft.mood = v; break;
+        case 'ask': if (!st.draft.mood) return; st.confirm = true; break;
+        case 'cancel': st.confirm = false; break;
+        case 'save': {
+          const ok = repo.add({ id: dayKey(TODAY), entryDate: TODAY, mood: st.draft.mood, note: st.draft.note.trim() });
+          st.confirm = false;
+          instances.forEach(a => { a.flash(ok ? 'Bugünün rengi kaydedildi' : 'Bugün için zaten bir kayıt var'); a.markSaved(); });
+          renderAll(); return;
+        }
+        case 'mode': st.mapMode = v; break;
+        case 'openMonth': st.map = { y: ty, m: +v }; st.mapMode = 'month'; break;
+        case 'mapMonth': shift(st.map, +v); break;
+        case 'statsMonth': shift(st.stats, +v); break;
+        case 'day': { const en = repo.get(v); st.sheet = v; st.unseal = !!en && isUnlocked(en.entryDate) && !opened.has(v); if (st.unseal) markOpened(v); break; }
+        case 'close': st.sheet = null; st.unseal = false; break;
+      }
+      this.render();
+    });
+    screen.addEventListener('input', ev => {
+      if (ev.target.tagName !== 'TEXTAREA') return;
+      const t = ev.target; t.value = t.value.replace(/[\r\n]+/g, ' ').slice(0, MAX_NOTE);
+      st.draft.note = t.value;
+      const c = screen.querySelector('.count'); c.textContent = `${t.value.length}/${MAX_NOTE}`; c.classList.toggle('limit', t.value.length >= MAX_NOTE);
+    });
+    screen.addEventListener('keydown', ev => {
+      if (ev.key === 'Escape' && (st.sheet || st.confirm)) { st.sheet = null; st.unseal = false; st.confirm = false; this.render(); }
+      if (ev.key === 'Enter' && ev.target.tagName === 'TEXTAREA') ev.preventDefault();
+    });
+    this.flash = msg => { st.snack = msg; clearTimeout(snackTimer); snackTimer = setTimeout(() => { st.snack = ''; renderOverlay(); }, 2400); };
+    this.markSaved = () => { st.savedNow = true; setTimeout(() => { st.savedNow = false; }, 400); };
+    this.setDraft = (mood, note) => { st.draft = { mood, note }; st.tab = 'today'; };
+    this.resetDraft = () => { opened.clear(); try { localStorage.removeItem(OPEN_KEY); } catch (e) {} st.unseal = false; st.draft = { mood: null, note: '' }; st.sheet = null; st.confirm = false; st.tab = 'today'; };
+  }
+
+  /* paylaşılan tema tercihi — Ayarlar › Tema (kilit, ayarlar ve uygulama sayfaları) */
+  const THEME_KEY = 'digura.theme';
+  const THEME_NAME = { light: 'Açık', dark: 'Koyu' };
+  const readTheme = () => { try { return localStorage.getItem(THEME_KEY) || 'system'; } catch (e) { return 'system'; } };
+  function applyThemeAll() {
+    const t = readTheme();
+    document.querySelectorAll('.screen[data-base]').forEach(s => s.classList.toggle('theme-dark', t === 'dark' || (t === 'system' && s.dataset.base === 'dark')));
+    document.querySelectorAll('[data-theme-label]').forEach(n => {
+      const base = n.dataset.themeLabel;
+      n.innerHTML = t === 'system' ? LABEL(base, null) : LABEL(base, t);
+    });
+  }
+  window.addEventListener('storage', e => { if (e.key === THEME_KEY) applyThemeAll(); });
+  const LABEL = (base, t) => t ? `<strong>Telefon ${base === 'dark' ? 'koyu' : 'açık'}</strong> · Ayarlar: ${THEME_NAME[t]}` : `<strong>${base === 'dark' ? 'Koyu' : 'Açık'} tema</strong> · ThemeMode.system`;
+
+  document.querySelectorAll('[data-mount]').forEach(el => instances.push(new App(el, el.dataset.mount)));
+  document.getElementById('reset').addEventListener('click', () => { repo.reset(); instances.forEach(a => a.resetDraft()); renderAll(); });
+  /* karşılama akışından gelen seçim: taslak olarak doldurulur, kayıt yine onayla yapılır */
+  try {
+    const raw = localStorage.getItem('digura.pending');
+    if (raw) {
+      localStorage.removeItem('digura.pending');
+      const p = JSON.parse(raw);
+      if (MOOD[p.mood] && !repo.get(dayKey(TODAY))) instances.forEach(a => a.setDraft(p.mood, String(p.note || '').slice(0, MAX_NOTE)));
+    }
+  } catch (e) {}
+  renderAll();
+  applyThemeAll();
+})();
+</script>
+</body>
+</html>
