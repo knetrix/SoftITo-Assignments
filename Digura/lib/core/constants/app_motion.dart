@@ -1,8 +1,8 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/widgets.dart'; // Duration, Curve ve BuildContext Tiplerini Sağlayan Widgets Kütüphanesini import Eder.
 
 /// Hareket jetonları (ANIMATION.md Bölüm 2). Widget içinde `Duration(...)`
 /// ya da `Cubic(...)` yazılmaz; tüm süre, eğri ve ölçekler buradan okunur.
-abstract final class AppMotion {
+abstract final class AppMotion { // Tüm Animasyon Süre, Eğri ve Ölçeklerini Tutan Class'tır.
   // ─── Süreler ───
   static const Duration micro = Duration(milliseconds: 140); // PIN noktası
   static const Duration press = Duration(milliseconds: 160); // basma geri bildirimi
@@ -21,8 +21,8 @@ abstract final class AppMotion {
   static const Duration unlockPop = Duration(milliseconds: 260); // kilit açıldı içeriği
   static const Duration unsealRing = Duration(milliseconds: 640); // kapsül halkası
   static const Duration unsealReveal = Duration(milliseconds: 560); // dairesel açılış
-  static const Duration unsealTextDelay = Duration(milliseconds: 320);
-  static const Duration unsealText = Duration(milliseconds: 300);
+  static const Duration unsealTextDelay = Duration(milliseconds: 320); // Kapsül Açılışında Not Metninin Gecikme Süresidir.
+  static const Duration unsealText = Duration(milliseconds: 300); // Kapsül Açılışında Not Metninin Giriş Süresidir.
   static const Duration scanTurn = Duration(milliseconds: 900); // taranıyor halkası turu
   static const Duration scanMax = Duration(seconds: 60); // sürekli dönme üst sınırı
   static const Duration ctaSwap = Duration(milliseconds: 120); // düğme metni çapraz solma
@@ -32,9 +32,9 @@ abstract final class AppMotion {
   static const Duration unlockHold = Duration(milliseconds: 1200); // "Kilit açıldı" bekleme
   static const Duration simulatedScan = Duration(milliseconds: 1100); // demo sensör (kilit)
   static const Duration simulatedEnroll = Duration(milliseconds: 1300); // demo sensör (kurulum)
-  static const Duration snackShort = Duration(milliseconds: 2400);
-  static const Duration snackLong = Duration(milliseconds: 2600);
-  static const Duration savedNowWindow = Duration(milliseconds: 400);
+  static const Duration snackShort = Duration(milliseconds: 2400); // Kısa Snackbar'ın Ekranda Kalma Süresidir.
+  static const Duration snackLong = Duration(milliseconds: 2600); // Uzun Snackbar'ın Ekranda Kalma Süresidir.
+  static const Duration savedNowWindow = Duration(milliseconds: 400); // Kaydın Yeni Yapılmış Sayıldığı Zaman Penceresidir.
 
   // ─── Eğriler ───
   static const Curve easeOut = Cubic(0.23, 1, 0.32, 1); // varsayılan: giren/çıkan her şey
@@ -42,25 +42,25 @@ abstract final class AppMotion {
   static const Curve linear = Curves.linear; // taranıyor halkası
 
   // ─── Ölçekler ───
-  static const double pressButton = 0.97;
-  static const double pressKey = 0.94;
-  static const double pressSwatch = 0.94;
-  static const double pressPalette = 0.92;
-  static const double pressCell = 0.96;
-  static const double pressRow = 0.985;
+  static const double pressButton = 0.97; // Butona Basılınca Uygulanan Ölçektir.
+  static const double pressKey = 0.94; // Tuş Takımı Tuşuna Basılınca Uygulanan Ölçektir.
+  static const double pressSwatch = 0.94; // Renk Örneğine Basılınca Uygulanan Ölçektir.
+  static const double pressPalette = 0.92; // Palet Öğesine Basılınca Uygulanan Ölçektir.
+  static const double pressCell = 0.96; // Takvim Hücresine Basılınca Uygulanan Ölçektir.
+  static const double pressRow = 0.985; // Liste Satırına Basılınca Uygulanan Ölçektir.
   static const double enterOffset = 8; // dp, aşağıdan yukarı
-  static const double dialogFrom = 0.96;
-  static const double orbFrom = 0.94;
-  static const double orbOpacityFrom = 0.7;
-  static const double dotFrom = 0.6;
-  static const double dotOpacityFrom = 0.4;
-  static const double shakeOffset = 8;
+  static const double dialogFrom = 0.96; // Diyaloğun Giriş Animasyonundaki Başlangıç Ölçeğidir.
+  static const double orbFrom = 0.94; // Renk Dairesinin Başlangıç Ölçeğidir.
+  static const double orbOpacityFrom = 0.7; // Renk Dairesinin Başlangıç Opaklığıdır.
+  static const double dotFrom = 0.6; // PIN Noktasının Başlangıç Ölçeğidir.
+  static const double dotOpacityFrom = 0.4; // PIN Noktasının Başlangıç Opaklığıdır.
+  static const double shakeOffset = 8; // Hatalı PIN Sallanmasının Yatay Kayma Miktarıdır.
   static const double parallax = 0.22; // onboarding → Bugün geçişinde giden sayfa
-  static const double ringTo = 1.9;
-  static const double ringOpacityFrom = 0.7;
+  static const double ringTo = 1.9; // Genişleyen Halkanın Bitiş Ölçeğidir.
+  static const double ringOpacityFrom = 0.7; // Genişleyen Halkanın Başlangıç Opaklığıdır.
 }
 
-extension MotionContext on BuildContext {
+extension MotionContext on BuildContext { // BuildContext'e Hareket Ayarı Getter'ı Ekleyen Extension'dır.
   /// Sistem "Hareketi azalt" ayarı (iOS) / "Animasyonları kaldır" (Android).
-  bool get reduceMotion => MediaQuery.maybeDisableAnimationsOf(this) ?? false;
+  bool get reduceMotion => MediaQuery.maybeDisableAnimationsOf(this) ?? false; // Sistemin Animasyonları Kapatıp Kapatmadığını Döndürür.
 }
